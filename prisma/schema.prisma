@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Schedule {
+  id        String   @id
+  accountId Int      @map("account_id")
+  agentId   Int      @map("agent_id")
+  startTime DateTime @map("start_time")
+  endTime   DateTime @map("end_time")
+  tasks     Tasks[]
+
+  @@map("schedule")
+}
+
+model Tasks {
+  id         String   @id
+  accountId  Int      @map("account_id")
+  scheduleId String   @map("schedule_id")
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  startTime  DateTime @map("start_time")
+  duration   Int
+  type       TaskType @default(BREAK)
+
+  @@map("task")
+}
+
+enum TaskType {
+  BREAK
+  WORK
+}
