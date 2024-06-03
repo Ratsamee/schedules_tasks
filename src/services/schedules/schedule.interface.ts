@@ -1,6 +1,6 @@
-import Schedule from "../../entities/schedule/Schedule";
-import { SearchScheduleCriteria } from "../../entities/schedule/schedule.entity";
+import { SearchScheduleCriteria, Schedule, ScheduleSearchResult } from "../../entities/schedule/schedule.entity";
 
 export default interface IScheduleService {
-    getSchedules(searchCriteria: SearchScheduleCriteria): Promise<Schedule[]>;
+    getSchedules(searchCriteria: SearchScheduleCriteria): Promise<Schedule[]>
+    getSchedule(id: string): Promise<ScheduleSearchResult>
 }
