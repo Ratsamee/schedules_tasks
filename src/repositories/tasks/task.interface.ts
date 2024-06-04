@@ -2,4 +2,5 @@ import { Task, TaskInput, SearchTasksCriteria } from '../../entities/task/task.e
 
 export default interface ITaskRepository {
     getTasks(searchCriteria: SearchTasksCriteria): Promise<Task[]>
+    getTask(id: string): Promise<Task | null>
 }

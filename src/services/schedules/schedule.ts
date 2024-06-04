@@ -12,7 +12,7 @@ class ScheduleService implements IScheduleService {
         return schedules
     }
     async getSchedule(id: string): Promise<ScheduleSearchResult> {
-        if (id.trim().length === 0) {
+        if (!id || id.trim().length === 0) {
             return { status: 'SCHEDULE_ID_INVALID', errorMessage: 'schedule id is invalid' }
         }
         // const repository = new ScheduleRepository()

@@ -3,6 +3,7 @@ import ITaskRepository from "./task.interface";
 import prisma from '../client'
 
 class TaskRepository implements ITaskRepository {
+
     async getTasks(searchCriteria: SearchTasksCriteria): Promise<Task[]> {
         const { accountId, scheduleId, skip, take } = searchCriteria;
         const tasks = await prisma.tasks.findMany({
@@ -10,8 +11,11 @@ class TaskRepository implements ITaskRepository {
             take,
             where: { accountId, scheduleId }
         })
-
         return tasks
+    }
+    async getTask(id: string): Promise<Task | null> {
+        const task = await prisma.tasks.findUnique({ where: { id } })
+        return task;
     }
 }
 

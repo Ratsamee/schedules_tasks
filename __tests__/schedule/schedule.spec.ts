@@ -43,6 +43,12 @@ describe('getSchedules', () => {
 })
 
 describe('getSchedule', () => {
+    it('should return schedule is invalid hence input is undefined', async () => {
+        // @ts-ignore
+        const result = await scheduleService.getSchedule()
+        const expectResult = { status: 'SCHEDULE_ID_INVALID', errorMessage: 'schedule id is invalid' }
+        expect(result).toEqual(expectResult)
+    })
     it('should return schedule is invalid hence input is empty string', async () => {
         const result = await scheduleService.getSchedule('')
         const expectResult = { status: 'SCHEDULE_ID_INVALID', errorMessage: 'schedule id is invalid' }

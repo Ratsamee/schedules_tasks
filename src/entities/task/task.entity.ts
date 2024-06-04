@@ -18,3 +18,9 @@ export interface TaskInput {
 export interface Task extends TaskInput {
     id: string
 }
+
+export interface TaskSearchResult {
+    status: 'SUCCESS' | 'TASK_NOT_EXIST' | 'TASK_ID_INVALID',
+    errorMessage?: string,
+    task?: Task
+}

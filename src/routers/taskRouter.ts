@@ -13,17 +13,40 @@ taskRouter.get('/', async (req: Request, res: Response) => {
         const schedules = await taskService.getTasks({ accountId, scheduleId, skip: Number(skip), take: Number(take) })
         return res.status(StatusCodes.OK).json(schedules)
     } catch (error) {
+        console.log('error', error)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
     }
 });
 
-taskRouter.get('/schedule/:id', async (req: Request, res: Response) => {
+taskRouter.get('/schedules/:id', async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { skip = '0', take = '10' } = req.query
-        const schedules = await taskService.getTasks({ scheduleId: id.toString(), skip: Number(skip), take: Number(take) })
-        return res.status(StatusCodes.OK).json(schedules)
+        const tasks = await taskService.getTasks({ scheduleId: id.toString(), skip: Number(skip), take: Number(take) })
+        return res.status(StatusCodes.OK).json(tasks)
     } catch (error) {
+        console.log('error', error)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
     }
 });
+taskRouter.get('/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const taskResult = await taskService.getTask(id)
+        const statusCodeLibs = {
+            'SUCCESS': StatusCodes.OK,
+            'TASK_ID_INVALID': StatusCodes.BAD_REQUEST,
+            'TASK_NOT_EXIST': StatusCodes.NOT_FOUND
+        }
+        const statusCode = statusCodeLibs[taskResult.status]
+        if (statusCode !== StatusCodes.OK) {
+            return res.status(statusCode).json({ error: taskResult.errorMessage })
+        }
+        res.status(StatusCodes.OK).json(taskResult.task)
+    } catch (error) {
+        console.log('error', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
+    }
+});
+
+export default taskRouter

@@ -31,3 +31,38 @@ describe('getTasks', () => {
         expect(result).toEqual([task])
     })
 });
+
+describe('get Task', () => {
+    it('should return task is invalid hence input is undefined', async () => {
+        // @ts-ignore
+        const result = await taskService.getTask()
+        const expectResult = { status: 'TASK_ID_INVALID', errorMessage: 'task id is invalid' }
+        expect(result).toEqual(expectResult)
+    })
+    it('should return task is invalid hence input is empty string', async () => {
+        const result = await taskService.getTask('')
+        const expectResult = { status: 'TASK_ID_INVALID', errorMessage: 'task id is invalid' }
+        expect(result).toEqual(expectResult)
+    })
+    it('should return schedule is not found', async () => {
+        prismaMock.schedule.findUnique.mockResolvedValue(null)
+        const expectResult = { status: 'TASK_NOT_EXIST', errorMessage: `task doesn't exist` }
+        const result = await taskService.getTask('1548')
+        expect(result).toEqual(expectResult)
+    })
+    it('should return schedule', async () => {
+        const taskId = uuid()
+        const task = {
+            id: taskId,
+            accountId: 2,
+            scheduleId: uuid(),
+            startTime: moment().utc().toDate(),
+            duration: 30,
+            type: TaskType.BREAK
+        }
+        prismaMock.tasks.findUnique.mockResolvedValue(task)
+        const expectResult = { status: 'SUCCESS', task }
+        const result = await taskService.getTask(taskId)
+        expect(result).toEqual(expectResult)
+    })
+})

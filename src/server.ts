@@ -3,6 +3,7 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import scheduleRouter from './routers/scheduleRouter'
+import taskRouter from './routers/taskRouter'
 
 const port = process.env.PORT || 3000
 export const application = express()
@@ -14,6 +15,7 @@ application.use(cors())
 application.use(helmet())
 
 application.use('/schedules', scheduleRouter)
+application.use('/tasks', taskRouter)
 
 httpServer = http.createServer(application)
 httpServer.listen(3000, () => {
