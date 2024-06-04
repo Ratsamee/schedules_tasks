@@ -30,3 +30,9 @@ export type TaskUpsertResult = {
     errorMessage?: string,
     task?: Task
 }
+
+export type TaskDeleteResult = {
+    status: 'SUCCESS' | 'TASK_NOT_EXIST' | 'TASK_ID_INVALID',
+    errorMessage?: string,
+    deleteTaskIds?: string[]
+}

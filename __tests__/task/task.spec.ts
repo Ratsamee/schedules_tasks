@@ -1,7 +1,7 @@
 import { TaskService } from '../../src/services'
 import { prismaMock } from '../__mocks__/singleton'
 import { v4 as uuid } from 'uuid'
-import moment, { duration } from 'moment'
+import moment from 'moment'
 import { TaskType } from '@prisma/client'
 import { Task, TaskInput } from '../../src/entities/task/task.entity'
 
@@ -197,4 +197,72 @@ describe('UpdateTask', () => {
         expect(result).toEqual(expectedResult)
     })
 
+})
+
+describe('delete task', () => {
+    describe('delete single task', () => {
+        it('should return invalid data', async () => {
+            const result = await taskService.deleteTask('32355')
+            const expectedResult = { status: 'TASK_ID_INVALID', errorMessage: 'task id is invalid' }
+            expect(result).toEqual(expectedResult)
+        })
+        it('should return task does not exist', async () => {
+            prismaMock.tasks.findUnique.mockResolvedValue(null)
+            const result = await taskService.deleteTask(uuid())
+            const expectedResult = { status: 'TASK_NOT_EXIST', errorMessage: `task doesn't exist` }
+            expect(result).toEqual(expectedResult)
+        })
+        it('should return delete id', async () => {
+            const task = {
+                id: uuid(),
+                accountId: 1,
+                scheduleId: uuid(),
+                startTime: moment().utc().toDate(),
+                duration: 30,
+                type: TaskType.BREAK
+            }
+            prismaMock.tasks.findUnique.mockResolvedValue(task)
+            prismaMock.tasks.delete.mockResolvedValue(task)
+            const result = await taskService.deleteTask(task.id)
+            const expectedResult = { status: 'SUCCESS', deleteTaskIds: [task.id] }
+            expect(result).toEqual(expectedResult)
+        })
+    })
+    describe('delete bulk tasks', () => {
+        it('should return invalid data', async () => {
+            const ids = ['434335', '656t6y']
+            const result = await taskService.deleteTasks(ids)
+            const expectedResult = { status: 'TASK_NOT_EXIST', errorMessage: `there is no tasks exist all list` }
+            expect(result).toEqual(expectedResult)
+        })
+        it('should delete all tasks', async () => {
+            const oneId = uuid()
+            const twoId = uuid()
+            const ids = [oneId, twoId]
+            const taskOne = {
+                id: oneId,
+                accountId: 1,
+                scheduleId: uuid(),
+                startTime: moment().utc().toDate(),
+                duration: 30,
+                type: TaskType.BREAK
+            }
+            const taskTwo = {
+                id: twoId,
+                accountId: 1,
+                scheduleId: uuid(),
+                startTime: moment().utc().toDate(),
+                duration: 30,
+                type: TaskType.BREAK
+            }
+            prismaMock.tasks.findUnique.mockResolvedValueOnce(taskOne)
+            prismaMock.tasks.findUnique.mockResolvedValueOnce(taskTwo)
+            prismaMock.tasks.delete.mockResolvedValueOnce(taskOne)
+            prismaMock.tasks.delete.mockResolvedValueOnce(taskTwo)
+            prismaMock.$transaction.mockResolvedValue([taskOne, taskTwo])
+            const result = await taskService.deleteTasks(ids)
+            const expectedResult = { status: 'SUCCESS', deleteTaskIds: ids }
+            expect(result).toEqual(expectedResult)
+        })
+    })
 })

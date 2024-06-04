@@ -47,6 +47,22 @@ class TaskRepository implements ITaskRepository {
         })
         return result
     }
+    async deleteTask(id: string): Promise<boolean> {
+        await prisma.tasks.delete({ where: { id: id } })
+        return true
+    }
+    async deleteTasks(ids: string[]): Promise<string[]> {
+        const deleteTasks = ids.map((taskId) => {
+            const deleteTask = prisma.tasks.delete({
+                where: {
+                    id: taskId
+                }
+            })
+            return deleteTask
+        })
+        const tasks = await prisma.$transaction(deleteTasks);
+        return tasks.map((task) => task.id)
+    }
 }
 
 export default TaskRepository

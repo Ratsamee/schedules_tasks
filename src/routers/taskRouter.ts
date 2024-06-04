@@ -92,4 +92,44 @@ taskRouter.patch('/:id', async (req: Request, res: Response) => {
     }
 });
 
+taskRouter.delete('/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const deletedTaskResult = await taskService.deleteTask(id);
+        const statusCodeLibs = {
+            'SUCCESS': StatusCodes.OK,
+            'TASK_ID_INVALID': StatusCodes.BAD_REQUEST,
+            'TASK_NOT_EXIST': StatusCodes.NOT_FOUND
+        }
+        const statusCode = statusCodeLibs[deletedTaskResult.status]
+        if (statusCode !== StatusCodes.OK) {
+            return res.status(statusCode).json({ error: deletedTaskResult.errorMessage })
+        }
+        res.status(StatusCodes.OK).json({ deletedTaskId: deletedTaskResult.deleteTaskIds })
+    } catch (error) {
+        console.log('error', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
+    }
+});
+
+taskRouter.delete('/', async (req: Request, res: Response) => {
+    try {
+        const { taskIds } = req.body;
+        const deletedTaskIds = await taskService.deleteTasks(taskIds);
+        const statusCodeLibs = {
+            'SUCCESS': StatusCodes.OK,
+            'TASK_ID_INVALID': StatusCodes.BAD_REQUEST,
+            'TASK_NOT_EXIST': StatusCodes.NOT_FOUND
+        }
+        const statusCode = statusCodeLibs[deletedTaskIds.status]
+        if (statusCode !== StatusCodes.OK) {
+            return res.status(statusCode).json({ error: deletedTaskIds.errorMessage })
+        }
+
+        res.status(StatusCodes.OK).json({ deletedTaskIds: deletedTaskIds.deleteTaskIds })
+    } catch (error) {
+        console.log('error', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
+    }
+});
 export default taskRouter

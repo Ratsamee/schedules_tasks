@@ -5,4 +5,6 @@ export default interface ITaskRepository {
     getTask(id: string): Promise<Task | null>
     createTask(task: Task): Promise<Task>
     updateTask(task: Task): Promise<Task>
+    deleteTask(id: string): Promise<boolean>
+    deleteTasks(ids: string[]): Promise<string[]>
 }

@@ -1,10 +1,16 @@
-import { SearchTasksCriteria, Task, TaskInput, TaskSearchResult, TaskUpsertResult } from "../../entities/task/task.entity";
+import {
+    SearchTasksCriteria,
+    Task, TaskInput,
+    TaskSearchResult,
+    TaskUpsertResult,
+    TaskDeleteResult
+} from "../../entities/task/task.entity";
 import TaskInputValidator from "../../entities/task/taskInputValidator";
 import ITaskService from "./task.interface"
 import TaskRepository from '../../repositories/tasks/task'
 import ScheduleRepository from '../../repositories/schedules/schedule'
 import { v4 as uuid } from 'uuid'
-import moment from "moment"
+import Joi from 'joi'
 
 const repository = new TaskRepository()
 const scheduleRepository = new ScheduleRepository()
@@ -64,6 +70,46 @@ class TaskService implements ITaskService {
 
         const result = await repository.updateTask(task);
         return { status: 'SUCCESS', task: result }
+    }
+    private isTaskIdValid(taskId: string): boolean {
+        const schema = Joi.object({ id: Joi.string().required().uuid() })
+        const { error } = schema.validate({ id: taskId })
+        return error?.message ? false : true
+    }
+
+    async deleteTask(id: string): Promise<TaskDeleteResult> {
+        if (!this.isTaskIdValid(id)) {
+            return { status: 'TASK_ID_INVALID', errorMessage: 'task id is invalid' }
+        }
+        const task = await repository.getTask(id)
+        if (!task) {
+            return { status: 'TASK_NOT_EXIST', errorMessage: `task doesn't exist` }
+        }
+        await repository.deleteTask(id)
+        return { status: 'SUCCESS', deleteTaskIds: [id] }
+    }
+    async deleteTasks(ids: string[]): Promise<TaskDeleteResult> {
+        const taskFunctions: any[] = [];
+        // get only valid id
+        ids.forEach((id) => {
+            if (this.isTaskIdValid(id)) {
+                taskFunctions.push(repository.getTask(id))
+            }
+        })
+        const taskSearchResult = await Promise.allSettled(taskFunctions);
+        const tasksIds: string[] = []
+        // get exist task id
+        taskSearchResult.forEach((result) => {
+            if (result.status === 'fulfilled' && result.value) {
+                const task = result.value as Task;
+                tasksIds.push(task.id)
+            }
+        })
+        if (!tasksIds.length) {
+            return { status: 'TASK_NOT_EXIST', errorMessage: `there is no tasks exist all list` }
+        }
+        const deletedTaskIds = await repository.deleteTasks(tasksIds)
+        return { status: 'SUCCESS', deleteTaskIds: deletedTaskIds }
     }
 }
 
