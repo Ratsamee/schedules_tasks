@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Schedule {
-  id        String   @id
+  id        String   @id @db.Uuid
   accountId Int      @map("account_id")
   agentId   Int      @map("agent_id")
   startTime DateTime @map("start_time")
@@ -25,9 +25,9 @@ model Schedule {
 }
 
 model Tasks {
-  id         String   @id
+  id         String   @id @db.Uuid
   accountId  Int      @map("account_id")
-  scheduleId String   @map("schedule_id")
+  scheduleId String   @map("schedule_id") @db.Uuid
   schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   startTime  DateTime @map("start_time")
   duration   Int

@@ -3,7 +3,7 @@ CREATE TYPE "TaskType" AS ENUM ('BREAK', 'WORK');
 
 -- CreateTable
 CREATE TABLE "schedule" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "account_id" INTEGER NOT NULL,
     "agent_id" INTEGER NOT NULL,
     "start_time" TIMESTAMP(3) NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE "schedule" (
 
 -- CreateTable
 CREATE TABLE "task" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "account_id" INTEGER NOT NULL,
-    "schedule_id" TEXT NOT NULL,
+    "schedule_id" UUID NOT NULL,
     "start_time" TIMESTAMP(3) NOT NULL,
     "duration" INTEGER NOT NULL,
     "type" "TaskType" NOT NULL DEFAULT 'BREAK',
