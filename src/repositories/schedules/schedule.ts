@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+import moment from 'moment'
 import { SearchScheduleCriteria, Schedule } from "../../entities/schedule/schedule.entity";
 import IScheduleRepository from "./schedule.interface";
 import prisma from '../client'
@@ -15,6 +17,31 @@ class ScheduleRepository implements IScheduleRepository {
     async getSchedule(id: string): Promise<Schedule | null> {
         const schedule = await prisma.schedule.findUnique({ where: { id } })
         return schedule
+    }
+    async createSchedule(data: Schedule): Promise<Schedule> {
+        const { id, accountId, agentId, startTime, endTime } = data;
+        const scheduleData: Prisma.ScheduleCreateInput = {
+            id,
+            accountId: accountId,
+            agentId: agentId,
+            startTime: moment(startTime).utc().toISOString(),
+            endTime: moment(endTime).utc().toISOString()
+        }
+        const result = await prisma.schedule.create({ data: scheduleData })
+        return result;
+    }
+    async updateSchedule(data: Schedule): Promise<Schedule> {
+        const { id, accountId, agentId, startTime, endTime } = data;
+        const result = await prisma.schedule.update({
+            where: { id },
+            data: {
+                accountId,
+                agentId,
+                startTime,
+                endTime
+            }
+        })
+        return result;
     }
 }
 

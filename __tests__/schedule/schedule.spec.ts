@@ -68,3 +68,73 @@ describe('getSchedule', () => {
         expect(result).toEqual(expectResult)
     })
 })
+
+describe('createSchedule', () => {
+    it('should return invalidate data', async () => {
+        const schedule = {
+            id: uuid(),
+            accountId: 2,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+        // @ts-ignore
+        const result = await scheduleService.createSchedule(schedule)
+        const expectedResult = { status: 'INVALID_DATA', errorMessage: "\"agentId\" is required" }
+        expect(result).toEqual(expectedResult)
+    })
+    it('should return schedule once create success', async () => {
+        const schedule = {
+            id: uuid(),
+            accountId: 2,
+            agentId: 102,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+        prismaMock.schedule.create.mockResolvedValue(schedule)
+        const result = await scheduleService.createSchedule(schedule)
+        expect(result).toEqual({ status: 'SUCCESS', schedule })
+    })
+})
+
+describe('updateSchedule', () => {
+    it('should return invalidate data', async () => {
+        const schedule = {
+            id: uuid(),
+            accountId: 2,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+        // @ts-ignore
+        const result = await scheduleService.updateSchedule(schedule)
+        const expectedResult = { status: 'INVALID_DATA', errorMessage: "\"agentId\" is required" }
+        expect(result).toEqual(expectedResult)
+    })
+    it('should return schedule does not exist', async () => {
+        prismaMock.schedule.findUnique.mockResolvedValue(null)
+        const schedule = {
+            id: uuid(),
+            accountId: 2,
+            agentId: 102,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+        const result = await scheduleService.updateSchedule(schedule)
+        const expectResult = { status: 'SCHEDULE_NOT_EXIST', errorMessage: `schedule doesn't exist` }
+        expect(result).toEqual(expectResult)
+    })
+    it('should return success', async () => {
+        const schedule = {
+            id: uuid(),
+            accountId: 2,
+            agentId: 102,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+        prismaMock.schedule.findUnique.mockResolvedValue(schedule)
+        const updatedSchedule = { ...schedule, agentId: 103 }
+        prismaMock.schedule.update.mockResolvedValue(schedule)
+        const expectedResult = { status: 'SUCCESS', schedule }
+        const result = await scheduleService.updateSchedule(updatedSchedule);
+        expect(result).toEqual(expectedResult);
+    })
+})
