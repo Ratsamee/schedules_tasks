@@ -33,6 +33,20 @@ class TaskRepository implements ITaskRepository {
         })
         return task;
     }
+    async updateTask(task: Task): Promise<Task> {
+        const { id } = task;
+        const result = await prisma.tasks.update({
+            where: { id: id },
+            data: {
+                accountId: task.accountId,
+                scheduleId: task.scheduleId,
+                startTime: moment(task.startTime).utc().toISOString(),
+                duration: task.duration,
+                type: task.type
+            }
+        })
+        return result
+    }
 }
 
 export default TaskRepository

@@ -46,6 +46,25 @@ class TaskService implements ITaskService {
         const result = await repository.createTask(task);
         return { status: 'SUCCESS', task: result }
     }
+    async updateTask(task: Task): Promise<TaskUpsertResult> {
+        const { id, accountId, scheduleId, startTime, duration, type } = task
+        const scheduleInputValidator = new TaskInputValidator(id, accountId, scheduleId, startTime, duration, type)
+        const { errorMessage } = scheduleInputValidator.validateData();
+        if (errorMessage) {
+            return { status: 'INVALID_DATA', errorMessage }
+        }
+        const existTask = await repository.getTask(id);
+        if (!existTask) {
+            return { status: 'TASK_NOT_EXIST', errorMessage: 'task does not exist' }
+        }
+        const existSchedule = await scheduleRepository.getSchedule(scheduleId);
+        if (!existSchedule) {
+            return { status: 'SCHEDULE_NOT_EXIST', errorMessage: 'schedule does not exist, invalid data' }
+        }
+
+        const result = await repository.updateTask(task);
+        return { status: 'SUCCESS', task: result }
+    }
 }
 
 export default TaskService

@@ -1,18 +1,18 @@
 import { TaskService } from '../../src/services'
 import { prismaMock } from '../__mocks__/singleton'
 import { v4 as uuid } from 'uuid'
-import moment from 'moment'
+import moment, { duration } from 'moment'
 import { TaskType } from '@prisma/client'
-import { TaskInput } from '../../src/entities/task/task.entity'
+import { Task, TaskInput } from '../../src/entities/task/task.entity'
 
 const taskService = new TaskService()
 describe('getTasks', () => {
-    it('should get empty schedules', async () => {
+    it('should get empty task', async () => {
         prismaMock.tasks.findMany.mockResolvedValue([])
         const result = await taskService.getTasks({})
         expect(result).toEqual([])
     })
-    it('should return schedule after filter', async () => {
+    it('should return tasks after filter', async () => {
         const task = {
             id: uuid(),
             accountId: 2,
@@ -45,13 +45,13 @@ describe('get Task', () => {
         const expectResult = { status: 'TASK_ID_INVALID', errorMessage: 'task id is invalid' }
         expect(result).toEqual(expectResult)
     })
-    it('should return schedule is not found', async () => {
-        prismaMock.schedule.findUnique.mockResolvedValue(null)
+    it('should return task is not found', async () => {
+        prismaMock.tasks.findUnique.mockResolvedValue(null)
         const expectResult = { status: 'TASK_NOT_EXIST', errorMessage: `task doesn't exist` }
         const result = await taskService.getTask('1548')
         expect(result).toEqual(expectResult)
     })
-    it('should return schedule', async () => {
+    it('should return task', async () => {
         const taskId = uuid()
         const task = {
             id: taskId,
@@ -125,4 +125,76 @@ describe('CreateTask', () => {
         const expectedResult = { status: 'SUCCESS', task }
         expect(result).toEqual(expectedResult)
     })
+})
+
+describe('UpdateTask', () => {
+    it('should return invalid data hence id is missing', async () => {
+        // @ts-ignore
+        const task: Task = {
+            accountId: 1,
+            scheduleId: uuid(),
+            startTime: moment().utc().toDate(),
+            duration: 30,
+            type: 'WORK'
+        }
+        const result = await taskService.updateTask(task)
+        const expectedResult = { status: 'INVALID_DATA', errorMessage: "\"id\" is required" }
+        expect(result).toEqual(expectedResult)
+    })
+    it('should return task does not exist', async () => {
+        const task: Task = {
+            id: uuid(),
+            accountId: 1,
+            scheduleId: uuid(),
+            startTime: moment().utc().toDate(),
+            duration: 30,
+            type: 'WORK'
+        }
+        prismaMock.tasks.findUnique.mockResolvedValue(null)
+        const result = await taskService.updateTask(task)
+        const expectedResult = { status: 'TASK_NOT_EXIST', errorMessage: 'task does not exist' }
+        expect(result).toEqual(expectedResult)
+    })
+    it('should return schedule does not exist', async () => {
+        const task: Task = {
+            id: uuid(),
+            accountId: 1,
+            scheduleId: uuid(),
+            startTime: moment().utc().toDate(),
+            duration: 30,
+            type: 'WORK'
+        }
+        prismaMock.tasks.findUnique.mockResolvedValue(task)
+        prismaMock.schedule.findUnique.mockResolvedValue(null)
+        const result = await taskService.updateTask(task)
+        const expectedResult = { status: 'SCHEDULE_NOT_EXIST', errorMessage: 'schedule does not exist, invalid data' }
+        expect(result).toEqual(expectedResult)
+    })
+    it('should return success', async () => {
+        const scheduleId = uuid()
+        const task: Task = {
+            id: uuid(),
+            accountId: 1,
+            scheduleId,
+            startTime: moment().utc().toDate(),
+            duration: 30,
+            type: 'WORK'
+        }
+        const schedule = {
+            id: scheduleId,
+            accountId: 2,
+            agentId: 102,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+        const updatedTask = { ...task, duration: 10 }
+        prismaMock.tasks.findUnique.mockResolvedValue(task)
+        prismaMock.tasks.update.mockResolvedValue(updatedTask)
+        prismaMock.schedule.findUnique.mockResolvedValue(schedule)
+
+        const result = await taskService.updateTask(updatedTask)
+        const expectedResult = { status: 'SUCCESS', task: updatedTask }
+        expect(result).toEqual(expectedResult)
+    })
+
 })

@@ -70,4 +70,26 @@ taskRouter.post('/', async (req: Request, res: Response) => {
     }
 });
 
+taskRouter.patch('/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { accountId, scheduleId, startTime, duration, type } = req.body
+        const taskResult = await taskService.updateTask({ id, accountId, scheduleId, startTime, duration, type });
+        const statusCodeLibs = {
+            'SUCCESS': StatusCodes.OK,
+            'SCHEDULE_NOT_EXIST': StatusCodes.NOT_FOUND,
+            'INVALID_DATA': StatusCodes.BAD_REQUEST,
+            'TASK_NOT_EXIST': StatusCodes.NOT_FOUND
+        }
+        const statusCode = statusCodeLibs[taskResult.status]
+        if (statusCode !== StatusCodes.OK) {
+            return res.status(statusCode).json({ error: taskResult.errorMessage })
+        }
+        res.status(StatusCodes.OK).json(taskResult.task)
+    } catch (error) {
+        console.log('error', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
+    }
+});
+
 export default taskRouter
