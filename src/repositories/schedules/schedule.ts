@@ -5,6 +5,7 @@ import IScheduleRepository from "./schedule.interface";
 import prisma from '../client'
 
 class ScheduleRepository implements IScheduleRepository {
+
     async getSchedules(searchCriteria: SearchScheduleCriteria): Promise<Schedule[]> {
         const { accountId, agentId, skip, take } = searchCriteria;
         const schedules = await prisma.schedule.findMany({
@@ -42,6 +43,20 @@ class ScheduleRepository implements IScheduleRepository {
             }
         })
         return result;
+    }
+    async deleteSchedule(id: string): Promise<boolean> {
+        const deleteTasks = prisma.tasks.deleteMany({
+            where: {
+                scheduleId: id
+            }
+        })
+        const deleteSchedule = prisma.schedule.delete({
+            where: {
+                id
+            }
+        })
+        await prisma.$transaction([deleteTasks, deleteSchedule])
+        return true
     }
 }
 

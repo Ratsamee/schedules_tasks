@@ -2,6 +2,7 @@ import { ScheduleService } from '../../src/services'
 import { prismaMock } from '../__mocks__/singleton'
 import { v4 as uuid } from 'uuid'
 import moment from 'moment'
+import { Prisma, TaskType } from '@prisma/client'
 
 const scheduleService = new ScheduleService()
 describe('getSchedules', () => {
@@ -142,5 +143,41 @@ describe('updateSchedule', () => {
         const expectedResult = { status: 'SUCCESS', schedule }
         const result = await scheduleService.updateSchedule(updatedSchedule);
         expect(result).toEqual(expectedResult);
+    })
+})
+
+describe('delete schedule', () => {
+    it('should return invalidate data once id = undefined', async () => {
+        // @ts-ignore
+        const result = await scheduleService.deleteSchedule()
+        const expectedResult = { status: 'INVALID_DATA', errorMessage: "schedule id is invalid" }
+        expect(result).toEqual(expectedResult)
+    })
+    it('should return schedule does not exist', async () => {
+        prismaMock.schedule.findUnique.mockResolvedValue(null)
+        const result = await scheduleService.deleteSchedule('eewewe')
+        const expectResult = { status: 'SCHEDULE_NOT_EXIST', errorMessage: `schedule doesn't exist` }
+        expect(result).toEqual(expectResult)
+    })
+    it('should delete schedule', async () => {
+        prismaMock.$transaction.mockResolvedValue([])
+        const scheduleId = uuid()
+        const schedule = {
+            id: scheduleId,
+            accountId: 2,
+            agentId: 102,
+            startTime: moment().utc().toDate(),
+            endTime: moment().utc().add(1, 'd').toDate()
+        }
+
+        prismaMock.tasks.deleteMany.mockResolvedValue({ count: 2 } as Prisma.BatchPayload)
+        prismaMock.schedule.delete.mockResolvedValue(schedule)
+        prismaMock.schedule.findUnique.mockResolvedValue(schedule)
+        const result = await scheduleService.deleteSchedule(scheduleId)
+
+        expect(result).toEqual({ status: 'SUCCESS' })
+        expect(prismaMock.tasks.deleteMany).toHaveBeenCalled()
+        expect(prismaMock.schedule.delete).toHaveBeenCalled()
+        expect(prismaMock.$transaction).toHaveBeenCalled()
     })
 })

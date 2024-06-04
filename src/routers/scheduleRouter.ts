@@ -80,4 +80,24 @@ scheduleRouter.patch('/:id', async (req: Request, res: Response) => {
     }
 });
 
+scheduleRouter.delete('/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params
+        const schedule = await scheduleServices.deleteSchedule(id)
+        const statusCodeLibs = {
+            'SUCCESS': StatusCodes.OK,
+            'SCHEDULE_NOT_EXIST': StatusCodes.NOT_FOUND,
+            'INVALID_DATA': StatusCodes.BAD_REQUEST
+        }
+        const statusCode = statusCodeLibs[schedule.status]
+        if (statusCode !== StatusCodes.OK) {
+            return res.status(statusCode).json({ error: schedule.errorMessage })
+        }
+        return res.status(StatusCodes.OK).json()
+    } catch (error) {
+        console.log('error', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
+    }
+});
+
 export default scheduleRouter

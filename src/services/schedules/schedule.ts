@@ -61,6 +61,17 @@ class ScheduleService implements IScheduleService {
         const schedule = await repository.updateSchedule(scheduleInput)
         return { status: 'SUCCESS', schedule }
     }
+    async deleteSchedule(id: string): Promise<ScheduleUpdateResult> {
+        if (!id || id.trim().length === 0) {
+            return { status: 'INVALID_DATA', errorMessage: 'schedule id is invalid' }
+        }
+        const existSchedule = await repository.getSchedule(id);
+        if (!existSchedule) {
+            return { status: 'SCHEDULE_NOT_EXIST', errorMessage: `schedule doesn't exist` }
+        }
+        await repository.deleteSchedule(id);
+        return { status: 'SUCCESS' }
+    }
 }
 
 export default ScheduleService

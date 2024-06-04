@@ -5,4 +5,5 @@ export default interface IScheduleService {
     getSchedule(id: string): Promise<ScheduleSearchResult>
     createSchedule(data: ScheduleInput): Promise<ScheduleUpdateResult>
     updateSchedule(data: Schedule): Promise<ScheduleUpdateResult>
+    deleteSchedule(id: string): Promise<ScheduleUpdateResult>
 }
