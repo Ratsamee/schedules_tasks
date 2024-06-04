@@ -38,8 +38,8 @@ class ScheduleRepository implements IScheduleRepository {
             data: {
                 accountId,
                 agentId,
-                startTime,
-                endTime
+                startTime: moment(startTime).utc().toISOString(),
+                endTime: moment(endTime).utc().toISOString()
             }
         })
         return result;

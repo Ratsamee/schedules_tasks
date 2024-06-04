@@ -24,7 +24,7 @@ class TaskInputValidator implements IJobBase {
             scheduleId: Joi.string().required().uuid(),
             startTime: Joi.date().iso().required(),
             duration: Joi.number().required(),
-            type: Joi.string().required().valid(['BREAK', 'WORK'])
+            type: Joi.string().required().valid('BREAK', 'WORK')
         })
         const { id, accountId, scheduleId, startTime, duration, type } = this;
         const { error, value } = schema.validate({ id, accountId, scheduleId, startTime, duration, type })

@@ -19,8 +19,14 @@ export interface Task extends TaskInput {
     id: string
 }
 
-export interface TaskSearchResult {
+export type TaskSearchResult = {
     status: 'SUCCESS' | 'TASK_NOT_EXIST' | 'TASK_ID_INVALID',
+    errorMessage?: string,
+    task?: Task
+}
+
+export type TaskUpsertResult = {
+    status: 'SUCCESS' | 'SCHEDULE_NOT_EXIST' | 'TASK_NOT_EXIST' | 'INVALID_DATA',
     errorMessage?: string,
     task?: Task
 }
