@@ -27,7 +27,7 @@ docker-compose up
 3. apply script to generate db
 
 ```
-npx prisma migrate resolve --applied 20240604043439_init
+npx prisma migrate dev
 ```
 
 4. run seed data
