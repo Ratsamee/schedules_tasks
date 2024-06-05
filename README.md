@@ -63,7 +63,10 @@ npm test
 
 ## APIs
 
--
+> [!WARNING]
+> set header as below
+
+    key: `authsecret` value: `[.env AUTH_SECRET]`
 
 ### Schedule
 
