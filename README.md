@@ -63,6 +63,8 @@ npm test
 
 ## APIs
 
+### Authorization (Simple way)
+
 > [!WARNING]
 > set header as below
 
