@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express"
 import { StatusCodes } from 'http-status-codes'
 import { ScheduleService } from '../services'
+import { validateAuthorise, rateLimitGetAction, rateLimitUpdateAction } from './middleware'
 
 const scheduleRouter = Router()
 const scheduleServices = new ScheduleService()
 
-scheduleRouter.get('/', async (req: Request, res: Response) => {
+scheduleRouter.get('/', rateLimitGetAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { accountid = '', agentid = '', skip = '0', take = '10' } = req.query
         const accountId = accountid === '' ? undefined : Number(accountid)
@@ -18,7 +19,7 @@ scheduleRouter.get('/', async (req: Request, res: Response) => {
     }
 });
 
-scheduleRouter.get('/:id', async (req: Request, res: Response) => {
+scheduleRouter.get('/:id', rateLimitGetAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const scheduleResult = await scheduleServices.getSchedule(id)
@@ -38,7 +39,7 @@ scheduleRouter.get('/:id', async (req: Request, res: Response) => {
     }
 });
 
-scheduleRouter.post('/', async (req: Request, res: Response) => {
+scheduleRouter.post('/', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { accountId, agentId, startTime, endTime } = req.body
         const schedule = await scheduleServices.createSchedule({ accountId, agentId, startTime, endTime });
@@ -58,7 +59,7 @@ scheduleRouter.post('/', async (req: Request, res: Response) => {
     }
 });
 
-scheduleRouter.patch('/:id', async (req: Request, res: Response) => {
+scheduleRouter.patch('/:id', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params
         const { accountId, agentId, startTime, endTime } = req.body
@@ -80,7 +81,7 @@ scheduleRouter.patch('/:id', async (req: Request, res: Response) => {
     }
 });
 
-scheduleRouter.delete('/:id', async (req: Request, res: Response) => {
+scheduleRouter.delete('/:id', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params
         const schedule = await scheduleServices.deleteSchedule(id)

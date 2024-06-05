@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express"
 import { StatusCodes } from 'http-status-codes'
 import { TaskService } from '../services'
+import { validateAuthorise, rateLimitGetAction, rateLimitUpdateAction } from './middleware'
 
 const taskRouter = Router()
 const taskService = new TaskService()
 
-taskRouter.get('/', async (req: Request, res: Response) => {
+taskRouter.get('/', rateLimitGetAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { accountid = '', scheduleid = '', skip = '0', take = '10' } = req.query
         const accountId = accountid === '' ? undefined : Number(accountid)
@@ -18,7 +19,7 @@ taskRouter.get('/', async (req: Request, res: Response) => {
     }
 });
 
-taskRouter.get('/schedules/:id', async (req: Request, res: Response) => {
+taskRouter.get('/schedules/:id', rateLimitGetAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { skip = '0', take = '10' } = req.query
@@ -29,7 +30,7 @@ taskRouter.get('/schedules/:id', async (req: Request, res: Response) => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' })
     }
 });
-taskRouter.get('/:id', async (req: Request, res: Response) => {
+taskRouter.get('/:id', rateLimitGetAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const taskResult = await taskService.getTask(id)
@@ -49,7 +50,7 @@ taskRouter.get('/:id', async (req: Request, res: Response) => {
     }
 });
 
-taskRouter.post('/', async (req: Request, res: Response) => {
+taskRouter.post('/', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { accountId, scheduleId, startTime, duration, type } = req.body
         const taskResult = await taskService.createTask({ accountId, scheduleId, startTime, duration, type });
@@ -70,7 +71,7 @@ taskRouter.post('/', async (req: Request, res: Response) => {
     }
 });
 
-taskRouter.patch('/:id', async (req: Request, res: Response) => {
+taskRouter.patch('/:id', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { accountId, scheduleId, startTime, duration, type } = req.body
@@ -92,7 +93,7 @@ taskRouter.patch('/:id', async (req: Request, res: Response) => {
     }
 });
 
-taskRouter.delete('/:id', async (req: Request, res: Response) => {
+taskRouter.delete('/:id', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const deletedTaskResult = await taskService.deleteTask(id);
@@ -112,7 +113,7 @@ taskRouter.delete('/:id', async (req: Request, res: Response) => {
     }
 });
 
-taskRouter.delete('/', async (req: Request, res: Response) => {
+taskRouter.delete('/', rateLimitUpdateAction, validateAuthorise, async (req: Request, res: Response) => {
     try {
         const { taskIds } = req.body;
         const deletedTaskIds = await taskService.deleteTasks(taskIds);
