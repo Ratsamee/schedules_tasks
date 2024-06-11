@@ -10,6 +10,17 @@ This repository will handle CRUD for schedule and tasks
 - prisma
 - jest
 
+
+#### Setup .env
+
+Please change .env.example to .env
+
+```
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+PORT=3000
+AUTH_SECRET='your_auth_secret'
+```
+
 ## Setup Development
 
 1. Install all package
@@ -34,16 +45,6 @@ npx prisma migrate dev
 
 ```
 npx prisma db seed
-```
-
-#### Setup .env
-
-Please change .env.example to .env
-
-```
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
-PORT=3000
-AUTH_SECRET='your_auth_secret'
 ```
 
 #### Run local
